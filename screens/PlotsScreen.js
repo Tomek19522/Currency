@@ -1,81 +1,79 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import ModalSelector from 'react-native-modal-selector-searchable';
 import PrimaryButton from '../components/PrimaryButton';
 import axios from 'axios';
-import { LineChart } from 'react-native-chart-kit';
+import Selector from '../components/Selector';
 
-const lastFiveDaysDates = [...Array(5).keys()]
-	.map((index) => {
-		const date = new Date();
-		date.setDate(date.getDate() - index - 2);
-		return `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}-${(
-			'0' + date.getDate()
-		).slice(-2)}`;
-	})
-	.reverse();
-const lastFiveMonthsDates = [...Array(5).keys()]
-	.map((index) => {
-		const date = new Date();
-		date.setDate(date.getDate() - 2);
-		return `${date.getFullYear()}-${('0' + (date.getMonth() - index + 1)).slice(
-			-2
-		)}-${('0' + date.getDate()).slice(-2)}`;
-	})
-	.reverse();
+// const lastFiveDaysDates = [...Array(5).keys()]
+// 	.map((index) => {
+// 		const date = new Date();
+// 		date.setDate(date.getDate() - index - 2);
+// 		return `${date.getFullYear()}-${('0' + (date.getMonth() + 1)).slice(-2)}-${(
+// 			'0' + date.getDate()
+// 		).slice(-2)}`;
+// 	})
+// 	.reverse();
+// const lastFiveMonthsDates = [...Array(5).keys()]
+// 	.map((index) => {
+// 		const date = new Date();
+// 		date.setDate(date.getDate() - 2);
+// 		return `${date.getFullYear()}-${('0' + (date.getMonth() - index)).slice(
+// 			-2
+// 		)}-${('0' + date.getDate()).slice(-2)}`;
+// 	})
+// 	.reverse();
+
+const staticLastFiveDays = [
+	'2022-10-26',
+	'2022-10-27',
+	'2022-10-28',
+	'2022-10-29',
+	'2022-10-30',
+];
+const staticLastFiveMonths = [
+	'2022-06-30',
+	'2022-07-30',
+	'2022-08-30',
+	'2022-09-30',
+	'2022-10-30',
+];
 
 const PlotsScreen = ({ navigation }) => {
 	const [enteredCurrency, setEnteredCurrency] = useState('');
-	const [calculatedValues, setCalculatedValues] = useState([0]);
-	const [correctLabels, setCorrectLabels] = useState([0]);
+	const [enteredCurrencyTitle, setEnteredCurrencyTitle] = useState('');
 	const [tableData, setTableData] = useState([]);
 
 	const currencyHandler = (option) => {
 		setEnteredCurrency(option.key);
+		setEnteredCurrencyTitle(option.label);
 	};
-
-	const calculateValues = (date, name) => {
-		axios
-			.get(
-				`https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/${date}/currencies/${name}/pln.json`
-			)
-			.then(({ data }) => {
-				const val = data['pln'];
-				setCalculatedValues((prev) => [...prev, val]);
-			})
-			.catch((error) => console.log(error));
-	};
-	const data = {
-		labels: correctLabels,
-		datasets: [
-			{
-				data: calculatedValues,
-			},
-		],
-	};
-
-	const printPlot = (selectedDate) => {
+	const selectDays = () => {
 		if (enteredCurrency === '') {
 			Alert.alert('Błędna waluta', 'Wpisz poprawną walutę', [
 				{ text: 'Zamknij' },
 			]);
 			return;
 		}
-		setCorrectLabels(selectedDate);
-		setCalculatedValues([]);
-		selectedDate.forEach((date) => {
-			calculateValues(date, enteredCurrency.toLocaleLowerCase());
+		navigation.navigate('SimplePlot', {
+			time: staticLastFiveDays,
+			id: enteredCurrency,
+			title: enteredCurrencyTitle,
+		});
+	};
+	const selectMonths = () => {
+		if (enteredCurrency === '') {
+			Alert.alert('Błędna waluta', 'Wpisz poprawną walutę', [
+				{ text: 'Zamknij' },
+			]);
+			return;
+		}
+		navigation.navigate('SimplePlot', {
+			time: staticLastFiveMonths,
+			id: enteredCurrency,
+			title: enteredCurrencyTitle,
 		});
 	};
 
-	const chartConfig = {
-		backgroundGradientFrom: '#000',
-		backgroundGradientFromOpacity: 1,
-		backgroundGradientTo: '#000',
-		backgroundGradientToOpacity: 1,
-		color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-		barPercentage: 0.5,
-	};
 	const addToList = (data) => {
 		const solution = Object.keys(data).map((e) => ({
 			key: e,
@@ -95,43 +93,26 @@ const PlotsScreen = ({ navigation }) => {
 	}, []);
 	const backToMenuHandler = () => {
 		setEnteredCurrency('');
-		setCalculatedValues([0]);
-		setCorrectLabels([0]);
+		setEnteredCurrencyTitle('');
 		navigation.navigate('MainMenu');
 	};
 	return (
 		<View style={styles.cointainer}>
 			<Text style={styles.text}>Wykresy</Text>
 			<View style={styles.helpScreen}>
-				<ModalSelector
-					data={tableData}
-					initValue='Wybierz walutę!'
+				<Selector
+					tableData={tableData}
+					initialValue='Wybierz walutę!'
 					onChange={currencyHandler}
-					listType='FLATLIST'
-					style={styles.modal}
-					searchTextStyle={{ color: '#000', fontSize: 16 }}
-					selectStyle={{ color: '#000' }}
-					initValueTextStyle={{ color: '#000' }}
-					optionTextStyle={{ color: '#000' }}
+					enteredValue={enteredCurrency}
 				/>
 			</View>
-			<LineChart
-				style={styles.chart}
-				data={data}
-				width={380}
-				height={300}
-				chartConfig={chartConfig}
-			/>
-			<View style={styles.helpScreen}>
+			<View style={[styles.helpScreen, styles.helpScreenMargin]}>
 				<View style={styles.buttonContainer}>
-					<PrimaryButton
-						style={styles.button}
-						onPress={printPlot.bind(this, lastFiveDaysDates)}>
+					<PrimaryButton style={styles.button} onPress={selectDays}>
 						Dzień
 					</PrimaryButton>
-					<PrimaryButton
-						style={styles.button}
-						onPress={printPlot.bind(this, lastFiveMonthsDates)}>
+					<PrimaryButton style={styles.button} onPress={selectMonths}>
 						Miesiąc
 					</PrimaryButton>
 				</View>
@@ -144,7 +125,6 @@ export default PlotsScreen;
 
 const styles = StyleSheet.create({
 	cointainer: {
-		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
 		padding: 10,
@@ -157,29 +137,11 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	helpScreen: {
+		marginTop: 20,
 		width: '80%',
 	},
-	modal: {
-		borderRadius: 8,
-		borderWidth: 2,
-		elevation: 4,
-		backgroundColor: '#ccc',
-		color: '#000',
-	},
-	textInput: {
-		textTransform: 'uppercase',
-		margin: 4,
-		padding: 2,
-		width: 150,
-		borderBottomWidth: 2,
-		borderColor: 'white',
-		color: 'white',
-		fontSize: 18,
-	},
-	chart: {
-		marginTop: 40,
-		marginBottom: 20,
-		borderRadius: 10,
+	helpScreenMargin: {
+		marginTop: 30,
 	},
 	buttonContainer: {
 		flexDirection: 'row',

@@ -7,6 +7,9 @@ const MainMenu = ({ navigation }) => {
 	const goToPlot = () => {
 		navigation.navigate('Plots');
 	};
+	const goToFav = () => {
+		navigation.navigate('FavCurriences');
+	};
 	const closeApp = () => {
 		BackHandler.exitApp();
 	};
@@ -15,6 +18,7 @@ const MainMenu = ({ navigation }) => {
 			<View style={styles.container}>
 				<PrimaryButton onPress={goToExchange}>Wymiana</PrimaryButton>
 				<PrimaryButton onPress={goToPlot}>Wykresy</PrimaryButton>
+				<PrimaryButton onPress={goToFav}>Ulubione</PrimaryButton>
 				<PrimaryButton onPress={closeApp}>Wyjście</PrimaryButton>
 			</View>
 		</>

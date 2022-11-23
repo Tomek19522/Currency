@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import PrimaryButton from '../components/PrimaryButton';
 import ModalSelector from 'react-native-modal-selector-searchable';
+import Selector from '../components/Selector';
 
 const ExchangeScreen = ({ navigation }) => {
 	const [enteredFirstCurrency, setEnteredFirstCurrency] = useState();
@@ -92,30 +93,18 @@ const ExchangeScreen = ({ navigation }) => {
 		<View style={styles.container}>
 			<Text style={styles.text}>Wymiana walut</Text>
 			<View style={styles.innerContainer}>
-				<ModalSelector
-					data={tableData}
-					initValue='Wybierz pierwszą walutę!'
+				<Selector
+					tableData={tableData}
+					initialValue='Wybierz pierwszą walutę!'
 					onChange={firstCurrencyHandler}
-					listType='FLATLIST'
-					style={styles.modal}
-					selectedKey={enteredFirstCurrency}
-					searchTextStyle={{ color: '#000', fontSize: 16 }}
-					selectStyle={{ color: '#000' }}
-					initValueTextStyle={{ color: '#000' }}
-					optionTextStyle={{ color: '#000' }}
+					enteredValue={enteredFirstCurrency}
 				/>
 
-				<ModalSelector
-					data={tableData}
-					initValue='Wybierz drugą walutę!'
+				<Selector
+					tableData={tableData}
+					initialValue='Wybierz drugą walutę!'
 					onChange={secondCurrencyHandler}
-					listType='FLATLIST'
-					selectedKey={enteredSecondCurrency}
-					style={styles.modal}
-					searchTextStyle={{ color: '#000', fontSize: 16 }}
-					selectStyle={{ color: '#000' }}
-					initValueTextStyle={{ color: '#000' }}
-					optionTextStyle={{ color: '#000' }}
+					enteredValue={enteredSecondCurrency}
 				/>
 				<View style={styles.numberCointainer}>
 					<Text style={styles.numberText}>Podaj liczbę pieniędzy:</Text>
@@ -163,13 +152,6 @@ const styles = StyleSheet.create({
 		width: '80%',
 		height: '50%',
 		justifyContent: 'space-evenly',
-	},
-	modal: {
-		borderRadius: 8,
-		borderWidth: 2,
-		elevation: 4,
-		backgroundColor: '#ccc',
-		color: '#000',
 	},
 	numberCointainer: {
 		justifyContent: 'center',
